@@ -53,7 +53,7 @@ mem_t *init_mem(void)
 {
   // programa para executar na nossa CPU
   int progr[] = {
-  #include "ex1.maq"
+  #include "e1.1.maq"
   };
   int tam_progr = sizeof(progr)/sizeof(progr[0]);
                 
