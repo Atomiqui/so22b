@@ -1,13 +1,13 @@
 CC = gcc
 CFLAGS = -Wall -Werror
+LDLIBS = -lcurses
 
-OBJS = exec.o cpu_estado.o es.o mem.o rel.o term.o instr.o err.o teste.o
+OBJS = exec.o cpu_estado.o es.o mem.o rel.o term.o instr.o err.o tela.o teste.o
 OBJS_MONT = instr.o err.o montador.o
-MAQS = ex1.maq ex2.maq ex3.maq  e1.1.maq e1.maq
+MAQS = ex1.maq ex2.maq ex3.maq ex4.maq
 TARGETS = teste montador
 
 all: ${TARGETS}
-
 # para gerar o montador, precisa de todos os .o do montador
 montador: ${OBJS_MONT}
 

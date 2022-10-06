@@ -294,7 +294,6 @@ static void op_RET(exec_t *self) // retorno de subrotina
     cpue_muda_PC(self->estado, mA1);
   }
 }
-
 static void op_LE(exec_t *self) // leitura de E/S
 {
   int A1, dado;

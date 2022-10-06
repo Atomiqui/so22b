@@ -3,7 +3,6 @@
 
 #include "exec.h"
 #include "instr.h"
-
 // uma CPU tem estado, memória, controlador de ES
 struct exec_t {
   cpu_estado_t *estado;
@@ -294,7 +293,6 @@ static void op_RET(exec_t *self) // retorno de subrotina
     cpue_muda_PC(self->estado, mA1);
   }
 }
-
 static void op_LE(exec_t *self) // leitura de E/S
 {
   int A1, dado;
