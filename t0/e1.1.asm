@@ -1,7 +1,10 @@
 ;   E1 primeira versão:
 ;       Le um número (letras dão erro)
-;       e logo em seguida printa o número lido;
-;       Repete esse processo 10 vezes.
+;       e guarda na memória no espaço reservado, chamado de "vetor";
+;       Repete esse processo 10 vezes;
+;       Então printa todos os elementos do 'vetor'.
+;
+;       Logo vem ai um versão que ordena os valores!!!
 ;
      CARGI 0      ; A = 0
      MVAX         ; X = A
