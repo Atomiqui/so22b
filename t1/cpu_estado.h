@@ -7,6 +7,12 @@
 
 typedef struct cpu_estado_t cpu_estado_t;  // estrutura opaca
 
+// modos de execução da CPU
+//   supervisor: executa todas as instruções
+//   usuario: não executa instruções privilegiadas (causa interrupção)
+//   zumbi: não executa (para quando o SO não tiver processos pronto)
+typedef enum { supervisor, usuario, zumbi } cpu_modo_t;
+
 // cria e inicializa um novo descritor de estado
 cpu_estado_t *cpue_cria(void);
 
@@ -30,10 +36,13 @@ err_t cpue_erro(cpu_estado_t *self);
 // retorna o valor do complemento do erro (por exemplo, o endereço em que ocorreu um erro
 //   de acesso à memória
 int cpue_complemento(cpu_estado_t *self);
+// retorno o modo de execução da CPU
+cpu_modo_t cpue_modo(cpu_estado_t *self);
 
 // funções para alterar partes do estado
 void cpue_muda_PC(cpu_estado_t *self, int val);
 void cpue_muda_A(cpu_estado_t *self, int val);
 void cpue_muda_X(cpu_estado_t *self, int val);
 void cpue_muda_erro(cpu_estado_t *self, err_t err, int complemento);
+void cpue_muda_modo(cpu_estado_t *self, cpu_modo_t modo);
 #endif // CPU_E_H

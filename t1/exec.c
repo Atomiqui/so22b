@@ -116,6 +116,10 @@ static void op_NOP(exec_t *self) // não faz nada
 
 static void op_PARA(exec_t *self) // para a CPU
 {
+  if (cpue_modo(self->estado) != supervisor) {
+    cpue_muda_erro(self->estado, ERR_INSTR_PRIV, PARA);
+    return;
+  }
   cpue_muda_erro(self->estado, ERR_CPU_PARADA, 0);
 }
 
@@ -295,6 +299,10 @@ static void op_RET(exec_t *self) // retorno de subrotina
 }
 static void op_LE(exec_t *self) // leitura de E/S
 {
+  if (cpue_modo(self->estado) != supervisor) {
+    cpue_muda_erro(self->estado, ERR_INSTR_PRIV, LE);
+    return;
+  }
   int A1, dado;
   if (pega_A1(self, &A1) && pega_es(self, A1, &dado)) {
     cpue_muda_A(self->estado, dado);
@@ -304,15 +312,30 @@ static void op_LE(exec_t *self) // leitura de E/S
 
 static void op_ESCR(exec_t *self) // escrita de E/S
 {
+  if (cpue_modo(self->estado) != supervisor) {
+    cpue_muda_erro(self->estado, ERR_INSTR_PRIV, ESCR);
+    return;
+  }
   int A1;
   if (pega_A1(self, &A1) && poe_es(self, A1, cpue_A(self->estado))) {
     incrementa_PC2(self);
   }
 }
 
+static void op_SISOP(exec_t *self) // chamada ao SO
+{
+  int A1;
+  if (pega_A1(self, &A1)) {
+    cpue_muda_erro(self->estado, ERR_SISOP, A1);
+    // não incrementa o PC, o SO deve fazer isso
+  }
+}
+
 
 err_t exec_executa_1(exec_t *self)
 {
+  // não executa se CPU estiver em estado zumbi
+  if (cpue_modo(self->estado) == zumbi) return ERR_OK;
   // não executa se CPU já estiver em erro
   if (cpue_erro(self->estado) != ERR_OK) return cpue_erro(self->estado);
 
@@ -345,6 +368,7 @@ err_t exec_executa_1(exec_t *self)
     case RET:    op_RET(self);    break;
     case LE:     op_LE(self);     break;
     case ESCR:   op_ESCR(self);   break;
+    case SISOP:  op_SISOP(self);  break;
     default:     cpue_muda_erro(self->estado, ERR_INSTR_INV, 0);
   }
 

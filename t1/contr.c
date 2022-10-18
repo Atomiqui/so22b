@@ -24,7 +24,7 @@ struct contr_t {
 };
 
 // funções auxiliares
-static void status_estado(exec_t *exec, mem_t *mem);
+static void contr_atualiza_estado(contr_t *self);
 
 
 contr_t *contr_cria(void)
@@ -35,7 +35,7 @@ contr_t *contr_cria(void)
   self->mem = mem_cria(MEM_TAM);
   // cria dispositivos de E/S (o relógio e um terminal)
   self->term = term_cria();
-  self->rel = rel_cria();
+  self->rel = rel_cria(0);
   t_inicio();
   // cria o controlador de E/S e registra os dispositivos
   self->es = es_cria();
@@ -71,16 +71,28 @@ mem_t *contr_mem(contr_t *self)
   return self->mem;
 }
 
+exec_t *contr_exec(contr_t *self)
+{
+  return self->exec;
+}
+
+es_t *contr_es(contr_t *self)
+{
+  return self->es;
+}
+
 void contr_laco(contr_t *self)
 {
-  // executa uma instrução por vez até CPU acusar erro
-  err_t err;
+  // executa uma instrução por vez até SO dizer que chega
   do {
+    err_t err;
     err = exec_executa_1(self->exec);
-    rel_tictac(self->rel);
-    status_estado(self->exec, self->mem);
+    if (err != ERR_OK) so_int(self->so, err);
+    err = rel_tictac(self->rel);
+    if (err != ERR_OK) so_int(self->so, err);
+    contr_atualiza_estado(self);
     t_atualiza();
-  } while (err == ERR_OK);
+  } while (so_ok(self->so));
       
   t_printf("Fim da execução.");
   t_printf("relógio: %d\n", rel_agora(self->rel));
@@ -115,9 +127,9 @@ static void str_estado(char *txt, exec_t *exec, mem_t *mem)
   cpue_destroi(estado);
 }
 
-void status_estado(exec_t *exec, mem_t *mem)
+void contr_atualiza_estado(contr_t *self)
 {
   char s[N_COL+1];
-  str_estado(s, exec, mem);
+  str_estado(s, self->exec, self->mem);
   t_status(s);
 }

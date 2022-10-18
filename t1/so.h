@@ -11,6 +11,14 @@
 
 typedef struct so_t so_t;
 
+// as chamadas de sistema
+typedef enum {
+  SO_LE = 1,       // lê do dispositivo em A; coloca valor lido em X
+  SO_ESCR,         // escreve o valor em X no dispositivo em A
+  SO_FIM,          // encerra a execução do processo
+  SO_CRIA,         // cria um novo processo, para executar o programa A
+} so_chamada_t;
+
 #include "contr.h"
 #include "err.h"
 #include <stdbool.h>
