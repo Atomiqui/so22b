@@ -7,6 +7,7 @@
 SO_LE   define 1
 SO_ESCR define 2
 SO_FIM  define 3
+
 ; dispositivos de E/S
 TELA    DEFINE 0
 
