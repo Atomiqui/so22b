@@ -12,20 +12,21 @@ struct so_t {
 static void init_mem(so_t *self);
 static void panico(so_t *self);
 
-so_t *so_cria(contr_t *contr)
+so_t* so_cria(contr_t *contr)
 {
   so_t *self = malloc(sizeof(*self));
   if (self == NULL) return NULL;
+
   self->contr = contr;
   self->paniquei = false;
   self->cpue = cpue_cria();
+
   init_mem(self);
   // coloca a CPU em modo usuário
-  /*
   exec_copia_estado(contr_exec(self->contr), self->cpue);
   cpue_muda_modo(self->cpue, usuario);
   exec_altera_estado(contr_exec(self->contr), self->cpue);
-  */
+
   return self;
 }
 
@@ -37,47 +38,81 @@ void so_destroi(so_t *self)
 
 // trata chamadas de sistema
 
+// AQUI
 // chamada de sistema para leitura de E/S
 // recebe em A a identificação do dispositivo
 // retorna em X o valor lido
 //            A o código de erro
 static void so_trata_sisop_le(so_t *self)
 {
-  // faz leitura assíncrona.
-  // deveria ser síncrono, verificar es_pronto() e bloquear o processo
   int disp = cpue_A(self->cpue);
   int val;
+
+  // Tentativa de fazer síncrona:
+    // Não consigo vizualizar o processo, como bloquear e alterar o estado?
+
+  // Verifica se es_pronto()
+  if(es_pronto(contr_es(self->contr), disp, leitura)) {
+    // TODO: Bloquear o processo.
+
+
+    // Faz a leitura:
+    err_t err = es_le(contr_es(self->contr), disp, &val);
+    cpue_muda_A(self->cpue, err);                             // A = err
+    if (err == ERR_OK) {                                      // se tudo ok -> X = o que foi lido
+      cpue_muda_X(self->cpue, val);
+    }
+
+    cpue_muda_PC(self->cpue, cpue_PC(self->cpue)+2);          // incrementa o PC
+    cpue_muda_erro(self->cpue, ERR_OK, 0);                    // interrupção da cpu foi atendida
+
+    // TODO: alterar o estado do processo
+    // altera o estado da CPU (deveria alterar o estado do processo)
+    exec_altera_estado(contr_exec(self->contr), self->cpue);
+  }
+
+  // faz leitura assíncrona.
+  // deveria ser síncrono, verificar es_pronto() e bloquear o processo
   err_t err = es_le(contr_es(self->contr), disp, &val);
   cpue_muda_A(self->cpue, err);
   if (err == ERR_OK) {
     cpue_muda_X(self->cpue, val);
   }
+  
   // incrementa o PC
   cpue_muda_PC(self->cpue, cpue_PC(self->cpue)+2);
   // interrupção da cpu foi atendida
   cpue_muda_erro(self->cpue, ERR_OK, 0);
-  // altera o estado da CPU (deveria alterar o estado do processo)
-  exec_altera_estado(contr_exec(self->contr), self->cpue);
+  
 }
 
+// AQUI
 // chamada de sistema para escrita de E/S
 // recebe em A a identificação do dispositivo
 //           X o valor a ser escrito
 // retorna em A o código de erro
 static void so_trata_sisop_escr(so_t *self)
 {
-  // faz escrita assíncrona.
-  // deveria ser síncrono, verificar es_pronto() e bloquear o processo
   int disp = cpue_A(self->cpue);
   int val = cpue_X(self->cpue);
-  err_t err = es_escreve(contr_es(self->contr), disp, val);
-  cpue_muda_A(self->cpue, err);
-  // interrupção da cpu foi atendida
-  cpue_muda_erro(self->cpue, ERR_OK, 0);
-  // incrementa o PC
-  cpue_muda_PC(self->cpue, cpue_PC(self->cpue)+2);
-  // altera o estado da CPU (deveria alterar o estado do processo)
-  exec_altera_estado(contr_exec(self->contr), self->cpue);
+
+  // Tentativa 2 de fazer síncrono:
+    // Não consigo vizualizar o processo, como bloquear e alterar o estado?
+
+  if(es_pronto(contr_es(self->contr), disp, escrita)) {
+    // TODO: Bloquear o processo
+
+    // escreve
+    err_t err = es_escreve(contr_es(self->contr), disp, val);
+    cpue_muda_A(self->cpue, err);
+
+    cpue_muda_erro(self->cpue, ERR_OK, 0);                        // interrupção da cpu foi atendida
+    cpue_muda_PC(self->cpue, cpue_PC(self->cpue)+2);              // incrementa o PC
+
+    // TODO: alterar o estado do processo
+    // altera o estado da CPU (deveria alterar o estado do processo)
+    exec_altera_estado(contr_exec(self->contr), self->cpue);
+  }
 }
 
 // chamada de sistema para término do processo
@@ -124,9 +159,11 @@ static void so_trata_sisop(so_t *self)
 // trata uma interrupção de tempo do relógio
 static void so_trata_tic(so_t *self)
 {
+  // AQUI
   // TODO: tratar a interrupção do relógio
 }
 
+// AQUI
 // houve uma interrupção do tipo err — trate-a
 void so_int(so_t *self, err_t err)
 {
@@ -149,7 +186,7 @@ bool so_ok(so_t *self)
   return !self->paniquei;
 }
 
-
+// AQUI QUE MUDA QUAL PROGRAMA VAI SER EXECUTADO:
 // carrega um programa na memória
 static void init_mem(so_t *self)
 {
