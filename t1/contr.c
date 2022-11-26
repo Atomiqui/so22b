@@ -13,7 +13,6 @@
 #include <stdio.h>
 
 
-
 struct contr_t {
   mem_t *mem;
   exec_t *exec;
